@@ -1,0 +1,64 @@
+server:
+  port: 9008
+spring:
+  application:
+    name: order
+  rabbitmq:
+    host: 192.168.232.128
+    port: 5672
+    username: guest
+    password: guest
+    #配置的目的，没啥用，springboot自动配置中会配置数据源，需要一个数据源
+    #也可以在启动类上排除对数据源的配置，在这里就不用写了
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/dongyimai?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+    username: root
+    password: 123
+    type: com.alibaba.druid.pool.DruidDataSource
+    minIdle: 5      # 最小连接池数量
+    maxActive: 20   # 最大连接池数量
+    maxWait: 60000  # 获取连接时最大等待间时
+  redis:
+    host: 192.168.232.128
+    port: 6379
+  main:
+    allow-bean-definition-overriding: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 5 # 每隔5秒发送一次心跳
+    lease-expiration-duration-in-seconds: 10 # 10秒不发送就过期
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
+    #开启feign的熔断
+feign:
+  hystrix:
+    enabled: true
+  httpclient:
+    connection-timeout: 5000 #设置feign的超时时间
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true  #开启驼峰式编写规范
+  type-aliases-package: com.offcn.order.pojo
+# 配置sql打印日志
+logging:
+  level:
+    com:
+      offcn: debug
+#hystrix 配置，将熔断的隔离策略换成信号量隔离
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000
+          strategy: SEMAPHORE
+
+#配置消息队列名称
+mq:
+  queue: order.payMessage.queue

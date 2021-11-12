@@ -1,0 +1,40 @@
+server:
+  port: 9100
+spring:
+  application:
+    name: user-auth
+  redis:
+    host: 192.168.232.128
+    port: 6379
+    password:
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  datasource:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/dongyimai_user?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&serverTimezone=UTC
+      username: root
+      password: 123
+  main:
+    allow-bean-definition-overriding: true
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka
+auth:
+  ttl: 3600  #token存储到redis的过期时间
+  clientId: offcn #客户端id   用来校验表oauth_client_details中的客户端信息
+  clientSecret: offcn #客户端秘钥   用来校验表oauth_client_details中的客户端信息
+  cookieDomain: localhost
+  cookieMaxAge: -1
+encrypt:
+  key-store:
+    location: classpath:/dongyimai.jks #证书路径
+    secret: dongyimai #秘钥   加盐   需与创建证书时一致否则打不开证书
+    alias: dongyimai #证书别名       需与创建证书时一致否则打不开证书
+    password: dongyimai #证书密码    需与创建证书时一致否则打不开证书
+

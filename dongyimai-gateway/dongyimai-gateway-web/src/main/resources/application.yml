@@ -1,0 +1,93 @@
+spring:
+  application:
+    name: gateway-web
+  #开启支持跨域
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]': #匹配所有请求
+            allowedOrigins: "*"#跨域处理允许所有的域
+            allowedMethods: #支持的方法
+              - GET
+              - POST
+              - PUT
+              - DELETE
+      routes:
+        #路由一，直接将path与uri合并
+        - id: dongyimai_search_route
+          uri: http://localhost:9005
+          predicates:
+            - Path=/search/**
+        #路由二，path前添加filters后与uri合并
+#        - id: dongyimai_goods_route
+#          #uri: http://localhost:9001
+#          uri: lb://DYM-SELLERGOODS
+#          predicates:
+#            - Path=/**
+#          filters:
+#            - PrefixPath=/brand
+#            #下面配置ip限流
+#            - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的facatory
+#              args:
+#                key-resolver: "#{@ipKeyResolver}"  #根据名称从spring容器获取KeyResolver对象
+#                redis-rate-limiter.replenishRate: 1 #令牌桶填充的速率
+#                redis-rate-limiter.burstCapacity: 1 #令牌桶的容量，允许在一秒钟内完成的最大请求数
+        #路由三，去掉path的某一级路径后与uri合并
+        - id: dongyimai_goods_route2
+          uri: http://localhost:9004
+          predicates:
+            - Path=/huangfei/content/**
+          filters:
+            - StripPrefix=1
+
+        #用户注册路由
+        - id: dongyimai_user_route2
+          uri: lb://USER
+          predicates: #注意gaib配置因与路由二冲突，测试时先注释掉路由二
+            - Path=/api/user/add,/api/address/**
+          filters:
+            - StripPrefix=1
+       #用户微服务
+        - id: dongyimai_user_route
+          uri: lb://DYM-SELLERGOODS
+          predicates: #注意gaib配置因与路由二冲突，测试时先注释掉路由二
+            - Path=/api/user/**,/api/address/**,/api/areas/**,/api/cities/**,/api/provinces/**
+          filters:
+            - StripPrefix=1
+      #购物车微服务
+        - id: dongyimai_order_route
+          uri: lb://ORDER
+          predicates:
+            - Path=/api/cart/**,/api/order/**,/api/orderItem/**
+          filters:
+            - StripPrefix=1
+            #网关限流配置（ip限流）
+            - name: RequestRateLimiter #局部过滤器 请求数限流 名字不能随便写 ，使用默认的facatory
+                args:
+                  key-resolver: "#{@ipKeyResolver}" #用户身份唯一识别标识符
+                  redis-rate-limiter.replenishRate: 1  #同一用户一秒钟只能处理一个请求
+                  redis-rate-limiter.burstCapacity: 4  #突发情况下 允许并发4个请求
+  redis:
+    port: 6379
+    host: 192.168.232.128
+
+server:
+  port: 8001
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 5 # 每隔5秒发送一次心跳
+    lease-expiration-duration-in-seconds: 10 # 10秒不发送就过期
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  web:
+    exposure:
+      include: true
