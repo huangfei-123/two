@@ -17,7 +17,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.3.9.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from repository 11111111111111 -->
     </parent>
     <groupId>com.offcn</groupId>
     <artifactId>dongyimai-parent2</artifactId>
